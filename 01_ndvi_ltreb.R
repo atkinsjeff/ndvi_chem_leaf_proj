@@ -19,13 +19,17 @@ df$lai <- rowMeans(df[,15:19], na.rm=TRUE)
 
 # chl adjust by lai
 df$chl_b_est <- df$chl_b * df$lai
-
+  
 # test plot
 x11()
 ggplot(df, aes(x = NDVI_IndexAvg, y = lai, color = Plot))+
-  geom_point()
+  geom_point(size = 4)+
+  ylab("LAI")+
+  xlab("NDVI")
 
-# test stats
+# test stats- df$chl_b * df$lai
+
+
 lm.lai.ndvi <- lm(NDVI_IndexAvg ~ lai, data = df)
 summary(lm.lai.ndvi)
 
