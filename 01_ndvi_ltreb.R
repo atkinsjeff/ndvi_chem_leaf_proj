@@ -17,26 +17,77 @@ head(df[,15:19])
 
 df$lai <- rowMeans(df[,15:19], na.rm=TRUE)
 
+# scale CANOPY N using LMA generic 54.1 g per m^2 from Abrams and Kubiske (og is 5.41 mg per cm^2)
+df$can.N <- (df$nitrogen * 54.1) / 100
+
 # chl adjust by lai
 df$chl_b_est <- df$chl_b * df$lai
-  
-# test plot
-x11()
-ggplot(df, aes(x = NDVI_IndexAvg, y = lai, color = Plot))+
-  geom_point(size = 4)+
-  ylab("LAI")+
-  xlab("NDVI")
 
-# test stats- df$chl_b * df$lai
-
-
+# let's look at LAI vs NDVI and address the autocorrelation issue first
 lm.lai.ndvi <- lm(NDVI_IndexAvg ~ lai, data = df)
 summary(lm.lai.ndvi)
 
+# intercept
+lm.lai.ndvi[[1]][1]
+
+# slope
+lm.lai.ndvi[[1]][2]
+
+
+# now I want to add that equation to the plot by hand
+# I know we can do auto, I just want to type it all out.
+lai.fun <- function(x) (x * 0.2024) + 0.072727
+
+# test plot
 x11()
-ggplot(df, aes(x = NDVI_IndexAvg, y = chl_b_est, color = Plot))+
-  geom_point()
+ggplot(df, aes(x = lai, y = NDVI_IndexAvg, color = Plot))+
+  geom_point(size = 4)+
+  ylab("LAI")+
+  xlab("NDVI")+
+  stat_function(fun = lai.fun)
+
+# let's remove residuals now
+df$ndvi.resid <- abs( ((df$lai * 0.2024) + 0.072727) - df$NDVI_IndexAvg)
+
+#let's plot these
+x11()
+ggplot(df, aes(y = ndvi.resid, x = Plot))+
+  geom_boxplot()
 
 # test stats
-lm.chl_b <- lm(NDVI_IndexAvg ~ chl_b_est, data = df)
-summary(lm.chl_b)
+lm.ndvi <- lm(NDVI_IndexAvg ~ chl_b_est, data = df)
+summary(lm.NDVI)
+
+
+
+################# 
+# let's look at plot averages
+
+df %>%
+  group_by(Plot) %>%
+  summarise(ndvi = mean(NDVI_IndexAvg), ndvi.sd = sd(NDVI_IndexAvg),
+            chl_b = mean(chl_b_est, na.rm = TRUE), chl_b.sd = sd(chl_b_est, na.rm = TRUE),
+            nitro = mean(can.N, na.rm = TRUE), nitro.sd = sd(can.N, na.rm = TRUE)) -> df.means
+
+# plot chl_b
+x11()
+ggplot(df.means, aes(y = chl_b, x = ndvi))+
+  geom_point(size = 4)+
+  geom_pointrange(aes(ymin = chl_b - chl_b.sd, ymax = chl_b + chl_b.sd))+ 
+  ylab("Chl B")+
+  xlab("NDVI")
+
+# plot canopy N
+x11()
+ggplot(df, aes(y = can.N, x = NDVI_IndexAvg))+
+  geom_point(size = 4)+
+  #geom_pointrange(aes(ymin = chl_b - chl_b.sd, ymax = chl_b + chl_b.sd))+ 
+  ylab("Canopy N (g m^-2)")+
+  xlab("NDVI")
+
+x11()
+ggplot(df.means, aes(y = nitro, x = ndvi))+
+  geom_point(size = 4)+
+  #geom_pointrange(aes(ymin = chl_b - chl_b.sd, ymax = chl_b + chl_b.sd))+ 
+  ylab("Canopy N (g m^-2)")+
+  xlab("NDVI")
