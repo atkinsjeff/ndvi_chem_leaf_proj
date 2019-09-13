@@ -19,13 +19,34 @@ x11()
 plot(ndvi, col = rev(viridis(32)),
      main = "UMBS Burn Plots")
 
+#old model
+#map.n <- (2.8574 * ndvi) + 1.0467
+map.n <- (5.661 * ndvi) + 1.64
+
+map.n[map.n < 0] <- NA
+
+x11()
+plot(map.n, col = rev(viridis(32)),
+     main = "UMBS Burn Plots - Nitrogen")
+
+
 # trying to extract points
 points <- read.csv("./data/burn_plot_coords.csv")
 
-
+x11()
 plot(ndvi, col = rev(viridis(32)),
      main = "UMBS Burn Plots")
 points(points$easting, points$northing, pch=0, cex = 2 )
+text(points$easting, points$northing, labels = points$plot, pos = 4, offset = 1) # add labels
+
+
+r <- raster(nrows=4, ncols=4)
+r <- setValues(r, 1:ncell(r))
+plot(r)
+text(r)
+
+plot(r)
+text(r, halo=TRUE, hc='blue', col='white', hw=0.2)
 
 # lets extract some gosh dang values
 ## create SPDF: SpatialPointsDataFrame()
@@ -97,5 +118,5 @@ cent_max.20$buffer <- 20
 #bind!
 ndvi_drone_points <- rbind(cent_max.5, cent_max.10, cent_max.20)
 
-write.csv(ndvi_drone_points, "./data/drone_ndvi.csv")
+#write.csv(ndvi_drone_points, "./data/drone_ndvi.csv")
 
