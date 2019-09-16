@@ -62,7 +62,7 @@ ggplot(litter, aes(x = lai, y = lai.gen, color = plot_id))+
 
 litter %>%
   group_by(plot_id) %>%
-  filter(year >= 2016) %>%
+  filter(year >= 2018) %>%
   summarize(lai = mean(lai, na.rm = TRUE), lai.sd = sd(lai, na.rm = TRUE),
             leaf_mass = mean(leaf_mass, na.rm = TRUE), leaf_mass.sd = mean(leaf_mass, na.rm = TRUE)) -> litter.means
 
@@ -84,31 +84,36 @@ x11()
 ggplot(df, aes(x = can.N, y = can.N.trap, color = plot_id))+
   geom_point(size = 3)
 
+#model fits
+lm.n.trap <- lm(can.N.trap ~ ndvi, data = df)
+lm.n.cam <- lm(can.N ~ ndvi, data = df)
+
+summary(lm.n.trap)
+
 
 x11(width = 3, height = 3)
 ggplot(df, aes(x = ndvi, y = can.N.trap))+
   geom_point(size = 4, shape = 21, color = "black", fill = "#693476")+
-  geom_abline(slope = 1)+
+  #geom_abline(slope = 1)+
   # xlim(0, 6)+
-  # ylim(0, 6)+
+  ylim(0, 8)+
   xlab("NDVI")+
   ylab("Canopy N")+
   theme_light()+
   theme(  panel.grid.major = element_line(colour = "#e8e9eb"), 
-          panel.grid.minor = element_line(colour = "#e8e9eb"))+
-  guides(fill = guide_legend(title = NULL))
+          panel.grid.minor = element_line(colour = "#e8e9eb"))
 
 x11(width = 3, height = 3)
-ggplot(df, aes(x = ndvi, y = can.N.trap, color = plot_id))+
-  geom_point(size = 4)+
+ggplot(df, aes(x = ndvi, y = can.N))+
+  geom_point(size = 4, shape = 21, color = "black", fill = "#4da6a3")+
+  #geom_abline(slope = 1)+
   # xlim(0, 6)+
-  # ylim(0, 6)+
+  ylim(0, 8)+
   xlab("NDVI")+
-  ylab("Canopy N")+
+  ylab("Canopy N via Camera LAI")+
   theme_light()+
   theme(  panel.grid.major = element_line(colour = "#e8e9eb"), 
-          panel.grid.minor = element_line(colour = "#e8e9eb"))+
-  guides(fill = guide_legend(title = NULL))
+          panel.grid.minor = element_line(colour = "#e8e9eb"))
 
 
 #################################
@@ -116,15 +121,29 @@ ggplot(df, aes(x = ndvi, y = can.N.trap, color = plot_id))+
 df$plot_id = factor(df$plot_id, levels = unique( df$plot_id[order(df$stand.age)]), ordered = FALSE)
 
 # let's look at some shit
+n.cam.label <- expression(paste("Canopy N scaled by Camera LAI (g ",m^-2,")"))
+n.trap.label <- expression(paste("Canopy N scaled by Trap LAI (g ",m^-2,")"))
+
 x11()
 ggplot(df, aes(x = plot_id, y =can.N, fill = plot_id)) +
   geom_boxplot()+
   xlab("")+
-  ylab("Canopy N (%)")+
+  ylab(n.cam.label)+
   theme_light()+
   theme(  panel.grid.major = element_line(colour = "#e8e9eb"), 
           panel.grid.minor = element_line(colour = "#e8e9eb"))+
   guides(fill = guide_legend(title = NULL))
+
+x11()
+ggplot(df, aes(x = plot_id, y =can.N.trap, fill = plot_id)) +
+  geom_boxplot()+
+  xlab("")+
+  ylab(n.trap.label)+
+  theme_light()+
+  theme(  panel.grid.major = element_line(colour = "#e8e9eb"), 
+          panel.grid.minor = element_line(colour = "#e8e9eb"))+
+  guides(fill = guide_legend(title = NULL))
+
 
 
 x11()
