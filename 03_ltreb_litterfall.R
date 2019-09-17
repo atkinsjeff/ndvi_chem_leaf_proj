@@ -62,7 +62,7 @@ ggplot(litter, aes(x = lai, y = lai.gen, color = plot_id))+
 
 litter %>%
   group_by(plot_id) %>%
-  filter(year >= 2018) %>%
+  # filter(year >= 201) %>%
   summarize(lai = mean(lai, na.rm = TRUE), lai.sd = sd(lai, na.rm = TRUE),
             leaf_mass = mean(leaf_mass, na.rm = TRUE), leaf_mass.sd = mean(leaf_mass, na.rm = TRUE)) -> litter.means
 
